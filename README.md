@@ -41,10 +41,17 @@ CrimeMind is built using a modern Python-based AI web stack designed for real-ti
 CrimeMind offers 4 completely distinct ways to play:
 
 ### 🕵️‍♂️ 1. Detective Simulator (Sandbox)
-This mode has the most complex logic, heavily shifting based on the role you select. The AI is strictly programmed with a "Start -> Mid-Game -> End" flow.
+This mode has the most complex logic, heavily shifting based on the story type and role you select. The AI is strictly programmed with a "Start -> Mid-Game -> End" flow.
+
+**Story Options:**
+*   **Premade Crime Story:** The AI dynamically generates a completely random, highly-detailed, and thrilling crime scenario behind the scenes so every playthrough is unique.
+*   **Custom Story:** You can explicitly type out your own scenario (e.g. "A bank heist in 1920s Chicago") and the AI will build the entire game around your prompt.
+
+**Role Dynamics:**
 *   **As the Detective:** The AI acts as your trusted buddy/partner. It provides raw facts and occasionally drops subtle hints to point you in the right direction. 
 *   **As the Victim:** The AI acts as a sympathetic Private Investigator you hired. It listens to your trauma and asks you who *you* think did it, building the case around your suspicions.
 *   **As the Criminal:** This is the most unique route. The AI starts as a narrator helping you set up the perfect crime. Once you actually commit the crime, the AI dynamically switches roles to become the Detective interrogating *you*. **Win State:** If you lie smartly and cover your tracks, you can successfully evade the law and win. If you make logical errors, the AI catches you.
+*   **As the Explorer:** The AI acts as a cinematic 3rd-party narrator, offering you limited narrative options to freely explore the unfolding story from an outside perspective.
 *   **The End of the Story:** When the mystery is solved (or you get caught), the AI is programmed to trigger a **Full Debrief**. It will reveal who the real criminal was, explain the full timeline of the crime, grade you on how well you played your role, and explicitly print *"STORY FINISHED"*.
 
 ### 🧞‍♂️ 2. Akinator Suspect Mode
