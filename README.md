@@ -40,20 +40,25 @@ CrimeMind is built using a modern Python-based AI web stack designed for real-ti
 
 CrimeMind offers 4 completely distinct ways to play:
 
-### 1. 🕵️‍♂️ Detective Simulator (Sandbox)
-*   **As the Detective:** The AI acts as your trusted buddy/partner, providing raw facts and dropping subtle hints.
-*   **As the Victim:** The AI acts as a sympathetic Private Investigator you hired, building the case around your suspicions.
-*   **As the Criminal:** You start by setting up the perfect crime. Once you commit the crime, the AI dynamically switches roles to interrogate *you*.
-*   **The End State:** When the mystery is solved, the AI triggers a **Full Debrief**, grading your performance before explicitly stating *"STORY FINISHED"*.
+### 🕵️‍♂️ 1. Detective Simulator (Sandbox)
+This mode has the most complex logic, heavily shifting based on the role you select. The AI is strictly programmed with a "Start -> Mid-Game -> End" flow.
+*   **As the Detective:** The AI acts as your trusted buddy/partner. It provides raw facts and occasionally drops subtle hints to point you in the right direction. 
+*   **As the Victim:** The AI acts as a sympathetic Private Investigator you hired. It listens to your trauma and asks you who *you* think did it, building the case around your suspicions.
+*   **As the Criminal:** This is the most unique route. The AI starts as a narrator helping you set up the perfect crime. Once you actually commit the crime, the AI dynamically switches roles to become the Detective interrogating *you*. **Win State:** If you lie smartly and cover your tracks, you can successfully evade the law and win. If you make logical errors, the AI catches you.
+*   **The End of the Story:** When the mystery is solved (or you get caught), the AI is programmed to trigger a **Full Debrief**. It will reveal who the real criminal was, explain the full timeline of the crime, grade you on how well you played your role, and explicitly print *"STORY FINISHED"*.
 
-### 2. 🧞‍♂️ Akinator Suspect Mode
-*   Think of a famous historical or fictional criminal. The AI is restricted to asking you strictly *one* "Yes/No" question at a time to deduce who you are thinking of.
+### 🧞‍♂️ 2. Akinator Suspect Mode
+*   **How it Plays:** The AI is brutally restricted to asking you strictly *one* "Yes/No" question at a time. If you try to dodge the question via voice or text, the AI is programmed to briefly acknowledge what you said, but aggressively force you back into answering the Yes/No question.
+*   **The End:** The game ends when the AI either successfully guesses your criminal (in which case it provides a cool historical breakdown of who they were) OR if it completely gives up, at which point it will roast you and admit defeat.
 
-### 3. 😈 Witty Interrogator
-*   Face off against a hostile interrogator. The AI uses your ML stats to attack you. If you sound nervous or evasive, it will mercilessly mock your intelligence and aggressively look for logical flaws in your alibi.
+### 😈 3. Witty Interrogator
+*   **How it Plays:** There is no "crime scene" here. The AI is programmed to act like an aggressive, hostile interrogator trying to figure out where you were today. It actively uses the new Machine Learning stats (Tone & Severity) to attack you. If you sound nervous or evasive, it will mercilessly mock your intelligence and life choices.
+*   **The End:** This mode is an **open-ended psychological battle**. There is no formal "Game Over" screen. It ends when you either confess, break character, or the AI formally decides to "arrest" you based on catching a logical flaw in your alibi.
 
-### 4. 🔍 Crime Scene Analyst
-*   Upload images and provide clues to your personal forensic lab. The AI channels its inner Sherlock Holmes to logically deduce the sequence of events from raw data.
+### 🔍 4. Crime Scene Analyst
+*   **How it Plays:** The AI channels its inner Sherlock Holmes. It is programmed to show off by noticing tiny details. If you upload an image, it routes the image to the powerful `Llama 3.2 11B Vision` model to scan the pixels for clues. 
+*   **The End:** This mode is also open-ended. It acts as your permanent forensic lab. You just keep throwing evidence, audio logs, and photos at it, and it will continuously update its working theory of who the killer is. 
+
 
 ---
 
