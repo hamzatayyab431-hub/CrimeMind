@@ -1,5 +1,5 @@
 Model,Task,Accuracy,Macro_F1,Macro_AUC,Inference_ms,Architecture
-SVM,Evidence,1.0,1.0,1.0,0.040318568547566734,sklearn
-Random_Forest,Deception,1.0,1.0,1.0,0.04535794258117676,sklearn
-BiLSTM,Evidence,1.0,1.0,1.0,2.0376775662104287,TensorFlow
-DistilBERT,Deception,1.0,1.0,1.0,98.87731999158859,Transformers
+SVM,Evidence,1.0,1.0,1.0,0.04152357578277588,sklearn
+Random_Forest,Deception,1.0,1.0,1.0,0.047018229961395264,sklearn
+BiLSTM,Evidence,1.0,1.0,1.0,2.1678258975346885,TensorFlow
+DistilBERT,Deception,1.0,1.0,1.0,140.953508913517,Transformers
