@@ -12,15 +12,17 @@ def load_classifier():
     except:
         return None
 
+# ─── 1b. LOAD DECEPTION MODEL ─────────────────────────────────────
+def load_deception_model():
+    try:
+        return joblib.load("agent/deception_model.pkl")
+    except:
+        return None
+
 # ─── 2. CLUE SEVERITY (existing) ──────────────────────────────────
 def classify_clue(model, text):
-    if model is not None:
-        proba = model.predict_proba([text.lower()])[0]
-        label = int(np.argmax(proba))
-        confidence = round(proba[label] * 100, 1)
-        severity = "🚨 MAJOR FELONY" if label == 1 else "📝 Minor Clue"
-        return severity, confidence
-        
+    text_lower = text.lower()
+    
     # Expanded Category-Based Keyword Mapping
     crime_keywords = {
         "HOMICIDE": ["murder", "kill", "death", "dead", "body", "corpse", "slay", "strangle", "stab", "shoot", "poison", "murderer"],
@@ -30,7 +32,6 @@ def classify_clue(model, text):
         "FRAUD": ["scam", "bribe", "fraud", "forge", "falsify", "blackmail", "extort", "ransom"]
     }
     
-    text_lower = text.lower()
     matches = 0
     found_categories = []
     
@@ -38,28 +39,36 @@ def classify_clue(model, text):
         if any(word in text_lower for word in keywords):
             matches += 1
             found_categories.append(category)
-    
+            
+    # If explicit keywords found, override model
+    if matches >= 2:
+        return f"🚨 MAJOR FELONY ({', '.join(found_categories[:2])})", 99.9
+    elif matches == 1:
+        return f"🔍 CRIME RELATED: {found_categories[0]}", 95.5
+
+    if model is not None:
+        proba = model.predict_proba([text_lower])[0]
+        label = int(np.argmax(proba))
+        confidence = round(proba[label] * 100, 1)
+        
+        if label == 1:
+            severity = "🚨 Biological Evidence"
+        elif label == 2:
+            severity = "🔫 Weaponry/Violence"
+        elif label == 3:
+            severity = "💻 Digital Evidence"
+        else:
+            severity = "📝 Trace Evidence"
+            
+        return severity, confidence
+
+    # Fallback if no model and no keywords
     blob = TextBlob(text)
     polarity_intensity = abs(blob.sentiment.polarity)
+    if polarity_intensity > 0.6:
+        return "⚠️ HIGHLY SUSPICIOUS", 85.0
     
-    # Dynamic confidence based on keyword density, emotional intensity, and statement length
-    word_count = len(text.split())
-    length_bonus = min(word_count * 0.8, 25.0)  # Up to 25% bonus for detailed statements
-    random_jitter = np.random.uniform(-4.5, 8.5) # Add slight realism jitter
-    
-    base_confidence = 15.0 + length_bonus + (matches * 22.0) + (polarity_intensity * 18.0) + random_jitter
-    confidence = min(max(round(base_confidence, 1), 12.5), 99.9)
-    
-    if matches >= 2:
-        severity = f"🚨 MAJOR FELONY ({', '.join(found_categories[:2])})"
-    elif matches == 1:
-        severity = f"🔍 CRIME RELATED: {found_categories[0]}"
-    elif polarity_intensity > 0.6:
-        severity = "⚠️ HIGHLY SUSPICIOUS"
-    else:
-        severity = "📝 Minor Detail"
-        
-    return severity, confidence
+    return "📝 Minor Detail", 45.0
 
 # ─── 3. SENTIMENT ANALYSIS ────────────────────────────────────────
 def analyze_sentiment(text):
@@ -87,6 +96,34 @@ def analyze_sentiment(text):
         "polarity": round(polarity, 2),
         "subjectivity": round(blob.sentiment.subjectivity, 2)
     }
+
+# ─── 3b. DECEPTION ANALYSIS ───────────────────────────────────────
+def analyze_deception(model, text):
+    text_lower = text.lower()
+    confession_words = ["kill", "murder", "stab", "shoot", "stole", "robbed", "did it", "guilty", "confess"]
+    
+    if any(word in text_lower for word in confession_words) and "i " in text_lower:
+        return "🚨 Direct Confession", 99.9
+
+    if model is None:
+        return "Unknown", 0.0
+    
+    proba = model.predict_proba([text])[0]
+    label = int(np.argmax(proba))
+    confidence = round(proba[label] * 100, 1)
+    
+    # If confidence is extremely low, mark it as inconclusive
+    if confidence < 40.0:
+        return "🤷 Inconclusive / Vague", confidence
+    
+    if label == 1:
+        return "🤔 Evasive", confidence
+    elif label == 2:
+        return "😠 Defensive / Hostile", confidence
+    elif label == 3:
+        return "🤥 Fabricated / Over-justified", confidence
+    else:
+        return "✅ Likely Truthful", confidence
 
 # ─── 4. SUSPECT RANKING ───────────────────────────────────────────
 def update_suspect_scores(suspects, found_clues, case_data):

@@ -22,7 +22,11 @@ CrimeMind is built using a modern Python-based AI web stack designed for real-ti
     *   **Input:** Streamlit's native audio widget records user voice.
     *   **Transcription:** Processed instantly via Groq's `whisper-large-v3` model.
     *   **Output (TTS):** The `edge-tts` library generates dynamic voice replies which are seamlessly pushed to the UI via base64 encoded HTML injections for robust autoplay capabilities.
-*   **Machine Learning (NLP):** Custom Python heuristics using `TextBlob` and `Scikit-Learn` perform real-time sentiment analysis, intent classification, and calculated severity tracking to adjust the AI's tone (e.g. flagging a suspect as "Defensive / Evasive").
+*   **Machine Learning (NLP):** 
+    *   **SVM & Random Forest:** Baseline scikit-learn models for evidence classification and deception detection.
+    *   **BiLSTM (TensorFlow/Keras):** A deep bidirectional LSTM neural network trained to categorize crime scene evidence.
+    *   **DistilBERT (PyTorch/Transformers):** A fine-tuned Hugging Face transformer model acting as an advanced deception detector to classify suspect statements.
+    *   **Real-time Analytics:** Custom heuristics using `TextBlob` and `Scikit-Learn` perform sentiment analysis, intent classification, and calculated severity tracking to adjust the AI's tone (e.g. flagging a suspect as "Defensive / Evasive").
 
 ---
 

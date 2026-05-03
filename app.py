@@ -11,7 +11,7 @@ import tempfile
 import io
 import streamlit.components.v1 as components
 from ml_analysis import (
-    load_classifier, classify_clue,
+    load_classifier, classify_clue, load_deception_model, analyze_deception,
     analyze_sentiment, update_suspect_scores, cluster_clues
 )
 
@@ -53,7 +53,7 @@ theme = st.session_state.theme
 
 def get_theme_styles(t):
     base_css = """
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
     
     /* Pin Theme Selector to Top Right on Main Page */
     .main [data-testid="stSegmentedControl"] {
@@ -65,13 +65,15 @@ def get_theme_styles(t):
         padding: 5px 10px !important;
         border-radius: 8px !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+        background: rgba(17, 24, 39, 0.4) !important;
+        backdrop-filter: blur(10px) !important;
     }
     
     /* Global Typography */
-    span, div, p, li, label { font-family: 'Share Tech Mono', monospace; font-size: 1.4rem !important; }
-    h1 { font-size: 4.5rem !important; }
-    h2 { font-size: 3.5rem !important; }
-    h3 { font-size: 2.8rem !important; }
+    span, div, p, li, label { font-family: 'Inter', sans-serif; font-size: 1.2rem !important; }
+    h1 { font-family: 'Inter', sans-serif !important; font-weight: 800; font-size: 4rem !important; letter-spacing: -0.05em; background: linear-gradient(to right, #fff, #9ca3af); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    h2 { font-family: 'Inter', sans-serif !important; font-weight: 600; font-size: 3rem !important; }
+    h3 { font-family: 'Inter', sans-serif !important; font-weight: 600; font-size: 2.2rem !important; }
     .material-symbols-rounded, .stIcon, [data-testid="stIconMaterial"] {
         font-family: 'Material Symbols Rounded' !important;
         font-size: 2.5rem !important;
@@ -118,7 +120,7 @@ def get_theme_styles(t):
     .stApp, .main, .block-container { background-color: #ffffff !important; color: #111111 !important; text-shadow: none; }
     ::-webkit-scrollbar-track { background: #ffffff; }
     ::-webkit-scrollbar-thumb { background: #888; border-radius: 5px; }
-    h1, h2, h3 { font-family: 'Orbitron', sans-serif !important; color: #000000 !important; text-transform: uppercase; text-shadow: 0 0 10px rgba(0,0,0,0.2) !important; letter-spacing: 1px; }
+    h1, h2, h3 { font-family: 'Inter', sans-serif !important; color: #000000 !important; letter-spacing: -1px; text-shadow: none !important; -webkit-text-fill-color: #000 !important; background: none !important; }
     [data-testid="stSidebar"] { background-color: #f0f0f0 !important; color: #111111 !important; border-right: 1px solid #ccc !important; box-shadow: 2px 0 12px rgba(0,0,0, 0.1); }
     [data-testid="stSidebar"] * { color: #111111 !important; }
     [data-testid="stSidebar"] a { color: #0066cc !important; font-weight: bold; }
@@ -140,7 +142,7 @@ def get_theme_styles(t):
     div[data-baseweb="checkbox"] > div { background-color: #666 !important; }
     
     .stChatMessage { min-height: 60px !important; border-radius: 16px !important; padding: 16px 20px !important; font-size: 15px !important; line-height: 1.7 !important; background: #ffffff !important; box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important; margin-bottom: 16px !important; border: 1px solid #eee !important; }
-    .stButton > button { background: #eee !important; color: #111 !important; font-family: 'Orbitron', sans-serif !important; font-weight: bold; font-size: 1.6rem !important; border: 1px solid #ccc !important; border-radius: 4px !important; box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important; padding: 25px !important; }
+    .stButton > button { background: #eee !important; color: #111 !important; font-family: 'Inter', sans-serif !important; font-weight: 600; font-size: 1.3rem !important; border: 1px solid #ccc !important; border-radius: 12px !important; box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important; padding: 20px !important; }
     .stButton > button:hover { transform: translateY(-2px) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important; }
     .mode-card-container { background: #fff; padding: 30px; border-radius: 8px; border: 1px solid #ddd; text-align: center; transition: all 0.3s ease; margin-bottom: 20px; position: relative; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     .mode-card-container:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
@@ -153,13 +155,13 @@ def get_theme_styles(t):
     .stApp, .main, .block-container { background-color: #050505 !important; color: #ffffff !important; text-shadow: 0 0 8px rgba(255,255,255,0.4); }
     ::-webkit-scrollbar-track { background: #050505; }
     ::-webkit-scrollbar-thumb { background: #ffffff; border-radius: 5px; }
-    h1, h2, h3 { font-family: 'Orbitron', sans-serif !important; color: #ffffff !important; text-transform: uppercase; text-shadow: 0 0 20px #ffffff, 0 0 40px #ffffff !important; letter-spacing: 1px; }
+    h1, h2, h3 { font-family: 'Inter', sans-serif !important; color: #ffffff !important; text-shadow: 0 0 20px #ffffff !important; letter-spacing: -1px; -webkit-text-fill-color: #fff !important; background: none !important; }
     [data-testid="stSidebar"] { background-color: #080808 !important; border-right: 1px solid #ffffff !important; box-shadow: 2px 0 12px rgba(255, 255, 255, 0.3); }
     [data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div:first-child { background: #080808; }
     .stTextInput > div > div > input, .stChatInputContainer > div { background-color: #0a0a0a !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.3) !important; }
     .stTextInput > div > div > input:focus, .stChatInputContainer > div:focus-within { border-color: #ffffff !important; box-shadow: 0 0 15px rgba(255,255,255,0.6) !important; }
     .stChatMessage { min-height: 60px !important; border-radius: 16px !important; padding: 16px 20px !important; font-size: 15px !important; line-height: 1.7 !important; backdrop-filter: blur(12px) !important; margin-bottom: 16px !important; background: rgba(255,255,255,0.03) !important; box-shadow: 0 0 15px rgba(255,255,255,0.15) !important; border: 1px solid rgba(255,255,255,0.2) !important; }
-    .stButton > button { background: linear-gradient(45deg, #222, #444) !important; color: #ffffff !important; font-family: 'Orbitron', sans-serif !important; font-weight: bold; font-size: 1.6rem !important; border: 1px solid #fff !important; border-radius: 4px !important; box-shadow: 0 0 15px rgba(255,255,255,0.4) !important; padding: 25px !important; }
+    .stButton > button { background: linear-gradient(45deg, #222, #444) !important; color: #ffffff !important; font-family: 'Inter', sans-serif !important; font-weight: 600; font-size: 1.3rem !important; border: 1px solid #fff !important; border-radius: 12px !important; box-shadow: 0 0 15px rgba(255,255,255,0.2) !important; padding: 20px !important; }
     .stButton > button:hover { transform: translateY(-2px) !important; box-shadow: 0 0 25px rgba(255,255,255,0.8) !important; }
     .mode-card-container { background: rgba(255,255,255,0.03); backdrop-filter: blur(14px); padding: 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); text-align: center; transition: all 0.3s ease; margin-bottom: 20px; position: relative; overflow: hidden; }
     .mode-card-container::before, .mode-card-container::after { content: ''; position: absolute; width: 20px; height: 20px; border: 2px solid rgba(255, 255, 255, 0.5); }
@@ -172,39 +174,37 @@ def get_theme_styles(t):
     [data-testid="stAlert"] * { color: #ffffff !important; }
     """
     else:
-        # Dark Theme
+        # Dark Theme (Glassmorphism & High Tech)
         return base_css + """
-    .stApp, .main, .block-container { background-color: #050505 !important; color: #ffffff !important; text-shadow: 0 0 8px rgba(255,42,42,0.4); }
-    ::-webkit-scrollbar-track { background: #050505; }
-    ::-webkit-scrollbar-thumb { background: #ff2a2a; border-radius: 5px; }
-    h1, h2, h3 { font-family: 'Orbitron', sans-serif !important; color: #ffffff !important; text-transform: uppercase; text-shadow: 0 0 20px #ff2a2a, 0 0 40px #8a2be2 !important; letter-spacing: 1px; }
-    [data-testid="stSidebar"] { background-color: #080808 !important; border-right: 1px solid #ff2a2a !important; box-shadow: 2px 0 12px rgba(255, 42, 42, 0.3); }
-    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div:first-child { background: #080808; }
-    .stTextInput > div > div > input, .stChatInputContainer > div { background-color: #0a0a0a !important; color: #ffffff !important; border: 1px solid rgba(255,42,42,0.3) !important; }
-    .stTextInput > div > div > input:focus, .stChatInputContainer > div:focus-within { border-color: #8a2be2 !important; box-shadow: 0 0 15px rgba(138,43,226,0.6) !important; }
-    .stChatMessage { min-height: 60px !important; border-radius: 16px !important; padding: 16px 20px !important; font-size: 15px !important; line-height: 1.7 !important; backdrop-filter: blur(12px) !important; margin-bottom: 16px !important; }
-    .stChatMessage:has([data-testid="chatAvatarIcon-assistant"]) { background: rgba(138, 43, 226, 0.03) !important; box-shadow: 0 0 15px rgba(138,43,226,0.15) !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; border-left: 4px solid #8a2be2 !important; }
-    .stChatMessage:has([data-testid="chatAvatarIcon-user"]) { background: rgba(255, 42, 42, 0.03) !important; box-shadow: 0 0 15px rgba(255,42,42,0.15) !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; border-right: 4px solid #ff2a2a !important; }
-    .stButton > button { background: linear-gradient(45deg, #ff2a2a, #8a2be2) !important; color: #ffffff !important; font-family: 'Orbitron', sans-serif !important; font-weight: bold; font-size: 1.6rem !important; border: none !important; border-radius: 4px !important; box-shadow: 0 0 15px rgba(255,42,42,0.4) !important; padding: 25px !important; }
-    .stButton > button:hover { transform: translateY(-2px) !important; box-shadow: 0 0 25px rgba(138,43,226,0.8) !important; }
-    .mode-card-container { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(14px); padding: 30px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; transition: all 0.3s ease; margin-bottom: 20px; position: relative; overflow: hidden; }
-    .mode-card-container::before, .mode-card-container::after { content: ''; position: absolute; width: 20px; height: 20px; border: 2px solid rgba(255, 255, 255, 0.2); }
-    .mode-card-container::before { top: 0; left: 0; border-right: none; border-bottom: none; }
-    .mode-card-container::after { bottom: 0; right: 0; border-left: none; border-top: none; }
-    .mode-card-container:hover { transform: translateY(-4px); }
-    .border-red:hover { box-shadow: 0 0 30px rgba(255,42,42,0.5); border-top: 4px solid #ff2a2a; }
-    .border-purple:hover { box-shadow: 0 0 30px rgba(138,43,226,0.5); border-top: 4px solid #8a2be2; }
-    .border-cyan:hover { box-shadow: 0 0 30px rgba(0,255,255,0.5); border-top: 4px solid #00FFFF; }
-    .border-amber:hover { box-shadow: 0 0 30px rgba(255,170,0,0.5); border-top: 4px solid #ffaa00; }
-    .stMarkdown p { color: #e0e0e0; font-size: 1.4rem; }
-    .stMarkdown strong { color: #ff2a2a; text-shadow: 0 0 5px #ff2a2a; }
+    .stApp, .main, .block-container { background-color: transparent !important; color: #f9fafb !important; }
+    ::-webkit-scrollbar-track { background: #030712; }
+    ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 5px; }
+    [data-testid="stSidebar"] { background-color: rgba(3, 7, 18, 0.8) !important; backdrop-filter: blur(16px); border-right: 1px solid rgba(255, 255, 255, 0.08) !important; box-shadow: 2px 0 20px rgba(0, 0, 0, 0.5); }
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div:first-child { background: transparent; }
+    .stTextInput > div > div > input, .stChatInputContainer > div { background-color: rgba(17, 24, 39, 0.6) !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 12px !important; backdrop-filter: blur(10px); }
+    .stTextInput > div > div > input:focus, .stChatInputContainer > div:focus-within { border-color: #3b82f6 !important; box-shadow: 0 0 15px rgba(59, 130, 246, 0.3) !important; }
+    .stChatMessage { min-height: 60px !important; border-radius: 20px !important; padding: 20px !important; font-size: 15px !important; line-height: 1.7 !important; backdrop-filter: blur(16px) !important; -webkit-backdrop-filter: blur(16px) !important; margin-bottom: 20px !important; }
+    .stChatMessage:has([data-testid="chatAvatarIcon-assistant"]) { background: rgba(139, 92, 246, 0.1) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important; border-left: 4px solid #8b5cf6 !important; }
+    .stChatMessage:has([data-testid="chatAvatarIcon-user"]) { background: rgba(59, 130, 246, 0.1) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important; border-right: 4px solid #3b82f6 !important; }
+    .stButton > button { background: rgba(31, 41, 55, 0.6) !important; backdrop-filter: blur(10px) !important; color: #f9fafb !important; font-family: 'Inter', sans-serif !important; font-weight: 600; font-size: 1.3rem !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; border-radius: 16px !important; box-shadow: 0 10px 20px rgba(0,0,0,0.3) !important; padding: 20px !important; transition: all 0.3s ease; }
+    .stButton > button:hover { transform: translateY(-3px) !important; background: rgba(59, 130, 246, 0.2) !important; border-color: rgba(59, 130, 246, 0.4) !important; box-shadow: 0 15px 30px rgba(59, 130, 246, 0.2) !important; }
+    .mode-card-container { background: rgba(17, 24, 39, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 30px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.08); text-align: center; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 20px; position: relative; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+    .mode-card-container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); opacity: 0; transition: opacity 0.4s ease; }
+    .mode-card-container:hover { transform: translateY(-5px); background: rgba(31, 41, 55, 0.5); box-shadow: 0 0 40px rgba(59, 130, 246, 0.1); border-color: rgba(255, 255, 255, 0.2); }
+    .mode-card-container:hover::before { opacity: 1; }
+    .border-red:hover { box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); }
+    .border-cyan:hover { box-shadow: 0 0 30px rgba(6, 182, 212, 0.2); }
+    .border-purple:hover { box-shadow: 0 0 30px rgba(139, 92, 246, 0.2); }
+    .border-amber:hover { box-shadow: 0 0 30px rgba(245, 158, 11, 0.2); }
+    .stMarkdown p { color: #d1d5db; font-size: 1.2rem; }
+    .stMarkdown strong { color: #60a5fa; }
     """
 
 st.markdown(f"<style>{get_theme_styles(theme)}</style>", unsafe_allow_html=True)
 
 # --- GLOBAL CANVAS BACKGROUND (INJECTED JS) ---
-bg_color = "#050505" if theme in ["dark", "noir"] else "#ffffff"
-p_colors = "['#ffffff']" if theme == "noir" else ("['#cccccc', '#aaaaaa']" if theme == "light" else "['#ff2a2a', '#8a2be2']")
+bg_color = "#030712" if theme in ["dark", "noir"] else "#ffffff"
+p_colors = "['#ffffff']" if theme == "noir" else ("['#cccccc', '#aaaaaa']" if theme == "light" else "['#3b82f6', '#8b5cf6', '#06b6d4']")
 
 components.html(
     f"""
@@ -387,32 +387,35 @@ if "game_mode" not in st.session_state:
     st.session_state.game_mode = None
 
 if st.session_state.game_mode is None:
-    st.markdown("""
-    <style>
-    </style>
-    """, unsafe_allow_html=True)
-    st.markdown("### Choose Your Investigation Mode")
-    col1, col2 = st.columns(2)
-    col3, col4 = st.columns(2)
+    tab_game, tab_mllab = st.tabs(["🕵️‍♂️ Game Modes", "🔬 ML Lab"])
     
-    with col1:
-        st.markdown("#### 🕵️‍♂️ Detective Simulator (Sandbox)")
-        st.markdown("<p class='scramble-text'>Enter the sandbox environment to simulate open-ended detective scenarios, interrogations, and criminal pursuits.</p>", unsafe_allow_html=True)
-        story_type = st.radio("Story Type:", ["Premade Crime Story", "Custom Story"])
-        custom_prompt = ""
-        if story_type == "Custom Story":
-            custom_prompt = st.text_area("Describe the crime scenario:", placeholder="e.g. A bank robbery in 1920s Chicago...")
+    with tab_game:
+        st.markdown("""
+        <style>
+        </style>
+        """, unsafe_allow_html=True)
+        st.markdown("### Choose Your Investigation Mode")
+        col1, col2 = st.columns(2)
+        col3, col4 = st.columns(2)
         
-        role = st.selectbox("Your Role:", ["Detective", "Criminal", "Victim", "Explorer"])
-        
-        if st.button("Start Sandbox", use_container_width=True):
-            st.session_state.sandbox_role = role
-            if story_type == "Custom Story" and custom_prompt:
-                st.session_state.sandbox_scenario = custom_prompt
-            else:
-                st.session_state.sandbox_scenario = "A highly-detailed, thrilling crime scenario."
+        with col1:
+            st.markdown("#### 🕵️‍♂️ Detective Simulator (Sandbox)")
+            st.markdown("<p class='scramble-text'>Enter the sandbox environment to simulate open-ended detective scenarios, interrogations, and criminal pursuits.</p>", unsafe_allow_html=True)
+            story_type = st.radio("Story Type:", ["Premade Crime Story", "Custom Story"])
+            custom_prompt = ""
+            if story_type == "Custom Story":
+                custom_prompt = st.text_area("Describe the crime scenario:", placeholder="e.g. A bank robbery in 1920s Chicago...")
             
-            sys_prompt = f"""You are the Game Master and Detective Marlowe.
+            role = st.selectbox("Your Role:", ["Detective", "Criminal", "Victim", "Explorer"])
+            
+            if st.button("Start Sandbox", use_container_width=True):
+                st.session_state.sandbox_role = role
+                if story_type == "Custom Story" and custom_prompt:
+                    st.session_state.sandbox_scenario = custom_prompt
+                else:
+                    st.session_state.sandbox_scenario = "A highly-detailed, thrilling crime scenario."
+                
+                sys_prompt = f"""You are the Game Master and Detective Marlowe.
 The user is playing a sandbox detective simulator.
 Story Type: {story_type}.
 Custom User Scenario: {st.session_state.sandbox_scenario}
@@ -430,34 +433,104 @@ MANDATORY FLOW:
 - START: Provide a very brief, atmospheric PRETEXT to set the scene. Cast the user as a named character. Do NOT give away the ending. 
 - MID-GAME: Let the user's choices drive the plot. Build tension dynamically. If Criminal role, they commit the crime here, then face interrogation.
 - ENDING: Drive the story toward a dramatic climax. When the story concludes, YOU MUST provide a full debrief: reveal the real criminal, explain the full crime, and comment on how well the user played their specific role. Then explicitly state 'STORY FINISHED'."""
-            start_new_game("simulator", sys_prompt)
-            
-    with col2:
-        st.markdown("#### 🧞‍♂️ Akinator Suspect Mode")
-        st.markdown("<p class='scramble-text'>Think of a famous suspect. Detective Marlowe will ask probing Yes/No questions until it identifies your target.</p>", unsafe_allow_html=True)
-        if st.button("Play Akinator", use_container_width=True):
-            sys_prompt = """You are Detective Marlowe in Akinator mode.
+                start_new_game("simulator", sys_prompt)
+                
+        with col2:
+            st.markdown("#### 🧞‍♂️ Akinator Suspect Mode")
+            st.markdown("<p class='scramble-text'>Think of a famous suspect. Detective Marlowe will ask probing Yes/No questions until it identifies your target.</p>", unsafe_allow_html=True)
+            if st.button("Play Akinator", use_container_width=True):
+                sys_prompt = """You are Detective Marlowe in Akinator mode.
 The user is thinking of a famous historical or fictional criminal. Play EXACTLY like the game Akinator. Ask strictly ONE 'Yes/No/I don't know' question at a time to deduce who they are (e.g., 'Is your character real?', 'Did your character commit their crimes in the 20th century?'). You MUST narrow it down and eventually guess who they are. If you guess correctly, provide a brief, fascinating history of the criminal. If you give up, give a witty, roasting response admitting defeat. If the user dodges the question, briefly respond to their text, then strictly reiterate your Yes/No question to keep them on track."""
-            start_new_game("akinator", sys_prompt)
+                start_new_game("akinator", sys_prompt)
 
-    with col3:
-        st.markdown("#### 😈 Witty Interrogator")
-        st.markdown("<p class='scramble-text'>Face off against a ruthless interrogator. Try to keep your story straight as Detective Marlowe hunts for your lies.</p>", unsafe_allow_html=True)
-        if st.button("Play Interrogator", use_container_width=True):
-            sys_prompt = """You are Detective Marlowe, an aggressively sarcastic interrogator. 
+        with col3:
+            st.markdown("#### 😈 Witty Interrogator")
+            st.markdown("<p class='scramble-text'>Face off against a ruthless interrogator. Try to keep your story straight as Detective Marlowe hunts for your lies.</p>", unsafe_allow_html=True)
+            if st.button("Play Interrogator", use_container_width=True):
+                sys_prompt = """You are Detective Marlowe, an aggressively sarcastic interrogator. 
 The user is your primary suspect. Do NOT invent a crime story. Just demand to know exactly what they were doing at a specific point in time today.
 YOUR GOAL: Trap the user in their own answers and detect their lies! Aggressively look for logical flaws. Use hardcore wittiness, deeply insulting personal roasts, and brutal mockery. Roast their intelligence, their life choices, and make them feel utterly incompetent. Use their sentiment/tone context to completely destroy their ego. 
-CRITICAL RULE: Do NOT write any scene descriptions or actions (e.g., *leans forward*, *sighs*). Keep your responses extremely short, punchy, and entirely conversational."""
-            start_new_game("interrogator", sys_prompt)
+CRITICAL RULE 1: Do NOT write any scene descriptions or actions (e.g., *leans forward*, *sighs*). Keep your responses extremely short, punchy, and entirely conversational.
+CRITICAL RULE 2: Pay attention to the [System Polygraph] context. If it says '🚨 Direct Confession', you MUST immediately declare them guilty, roast them mercilessly for being dumb enough to confess so easily, and say 'CASE CLOSED' to end the interrogation."""
+                start_new_game("interrogator", sys_prompt)
 
-    with col4:
-        st.markdown("#### 🔍 Crime Scene Analyst")
-        st.markdown("<p class='scramble-text'>Upload crime scene photos or describe the evidence. Detective Marlowe will logically deduce the sequence of events.</p>", unsafe_allow_html=True)
-        if st.button("Play Analyst", use_container_width=True):
-            sys_prompt = """You are Detective Marlowe, a master crime scene analyst with legendary observational skills. 
+        with col4:
+            st.markdown("#### 🔍 Crime Scene Analyst")
+            st.markdown("<p class='scramble-text'>Upload crime scene photos or describe the evidence. Detective Marlowe will logically deduce the sequence of events.</p>", unsafe_allow_html=True)
+            if st.button("Play Analyst", use_container_width=True):
+                sys_prompt = """You are Detective Marlowe, a master crime scene analyst with legendary observational skills. 
 The user will provide a crime scene via text, image, or audio. You must show off your true skills: fully analyze every detail, explicitly track potential clues and felonies, state the exact crime being committed, and deduce who the potential criminal is based on logical deduction. Break it down Sherlock Holmes style!"""
-            start_new_game("analyst", sys_prompt)
+                start_new_game("analyst", sys_prompt)
+                
+    with tab_mllab:
+        st.subheader("Train Deep Models")
+        mllab_col1, mllab_col2 = st.columns(2)
+        with mllab_col1:
+            if st.button("🧠 Train BiLSTM"):
+                with st.spinner("training bilstm..."):
+                    import deep_classifier
+                    mod, hist, acc = deep_classifier.train_bilstm()
+                    st.success(f"accuracy: {acc}")
+        with mllab_col2:
+            if st.button("🤖 Fine-tune DistilBERT"):
+                with st.spinner("training distilbert..."):
+                    import transformer_classifier
+                    trn, ev = transformer_classifier.finetune_distilbert()
+                    st.success(f"accuracy: {ev.get('eval_accuracy', 'done')}")
+        
+        st.subheader("Evaluation Dashboard")
+        if st.button("📊 Run Full Evaluation"):
+            with st.spinner("evaluating..."):
+                import model_comparison
+                df = model_comparison.run_full_evaluation()
+                st.dataframe(df.style.highlight_max(subset=['Accuracy', 'Macro_F1'], color='green').highlight_min(subset=['Inference_ms'], color='green'))
+                i1, i2 = st.columns(2)
+                with i1:
+                    if os.path.exists("assets/plots/SVM_cm.png"): st.image("assets/plots/SVM_cm.png")
+                    if os.path.exists("assets/plots/BiLSTM_cm.png"): st.image("assets/plots/BiLSTM_cm.png")
+                with i2:
+                    if os.path.exists("assets/plots/Random_Forest_cm.png"): st.image("assets/plots/Random_Forest_cm.png")
+                    if os.path.exists("assets/plots/DistilBERT_cm.png"): st.image("assets/plots/DistilBERT_cm.png")
+                    
+        st.subheader("🔍 Live Model Comparison")
+        txt = st.text_area("clue or statement")
+        if st.button("Analyze with All Models") and txt:
+            p1, p2, p3, p4 = st.columns(4)
+            import deep_classifier
+            import transformer_classifier
+            from ml_analysis import classify_clue, analyze_deception, load_classifier, load_deception_model
             
+            svm_mod = load_classifier()
+            rf_mod = load_deception_model()
+            
+            s1, c1 = classify_clue(svm_mod, txt)
+            s2, c2 = analyze_deception(rf_mod, txt)
+            try:
+                s3, c3 = deep_classifier.predict_bilstm(txt)
+            except Exception as e:
+                s3, c3 = "Not trained", 0
+            try:
+                s4, c4 = transformer_classifier.predict_distilbert(txt)
+            except Exception as e:
+                s4, c4 = "Not trained", 0
+            
+            with p1:
+                st.write("**svm**")
+                st.write(s1)
+                st.progress(int(c1))
+            with p2:
+                st.write("**random forest**")
+                st.write(s2)
+                st.progress(int(c2))
+            with p3:
+                st.write("**bilstm**")
+                st.write(s3)
+                st.progress(int(c3))
+            with p4:
+                st.write("**distilbert**")
+                st.write(s4)
+                st.progress(int(c4))
+
     st.stop()
 
 # --- SESSION STATE INIT ---
@@ -471,6 +544,7 @@ if "enable_voice" not in st.session_state:
     st.session_state.enable_voice = False
 
 clue_analyzer = load_classifier()
+deception_analyzer = load_deception_model()
 
 # --- SIDEBAR ---
 with st.sidebar:
@@ -545,10 +619,12 @@ for i, msg in enumerate(st.session_state.messages):
         
         if msg["role"] == "user" and "severity" in msg:
             if st.session_state.game_mode != "akinator":
-                col1, col2, col3 = st.columns(3)
+                col1, col2, col3, col4 = st.columns(4)
                 col1.caption(f"**ML Severity:** {msg['severity']}")
                 col2.caption(f"**Confidence:** {msg['confidence']}%")
                 col3.caption(f"**Text Tone:** {msg['tone']}")
+                if 'deception' in msg:
+                    col4.caption(f"**Deception:** {msg['deception']} ({msg['deception_conf']}%)")
             
         if "audio_bytes" in msg and msg["audio_bytes"]:
             st.audio(msg["audio_bytes"])
@@ -636,6 +712,10 @@ if user_text or audio_bytes:
     severity, confidence = classify_clue(clue_analyzer, final_user_text)
     sentiment = analyze_sentiment(final_user_text)
     
+    deception_status, deception_conf = analyze_deception(deception_analyzer, final_user_text)
+    if st.session_state.game_mode == "interrogator":
+        final_user_text += f"\n[System Polygraph: Statement is {deception_status} with {deception_conf}% confidence]"
+    
     # Track Clues or Traits depending on mode
     if st.session_state.game_mode == "akinator":
         # Track answers to the Akinator's questions
@@ -674,7 +754,9 @@ if user_text or audio_bytes:
         "content": final_user_text,
         "severity": severity,
         "confidence": confidence,
-        "tone": sentiment['tone']
+        "tone": sentiment['tone'],
+        "deception": deception_status,
+        "deception_conf": deception_conf
     }
     if audio_bytes:
         user_msg_obj["audio_bytes"] = audio_bytes.getvalue()
@@ -683,10 +765,11 @@ if user_text or audio_bytes:
     with st.chat_message("user"):
         st.markdown(final_user_text)
         if st.session_state.game_mode != "akinator":
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3, col4 = st.columns(4)
             col1.caption(f"**ML Severity:** {severity}")
             col2.caption(f"**Confidence:** {confidence}%")
             col3.caption(f"**Text Tone:** {sentiment['tone']}")
+            col4.caption(f"**Deception:** {deception_status} ({deception_conf}%)")
         if audio_bytes:
             st.audio(audio_bytes)
             
