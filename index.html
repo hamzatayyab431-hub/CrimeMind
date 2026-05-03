@@ -6,7 +6,7 @@
     <title>CrimeMind | Advanced Forensic AI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" integrity="sha512-wC/cunGGDjXSl9OHweO00/H08Oou9D2A3aTWe2/kX5x60Nq81w3n+zZzBv1R/E9iBbxu3J4b5QhQ1Q+WfN4T8g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         :root {
@@ -27,10 +27,14 @@
             padding: 0;
         }
 
+        * {
+            cursor: none !important;
+        }
+
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Share Tech Mono', monospace;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -40,11 +44,51 @@
             position: relative;
         }
 
+        /* Custom Glowing Cursor */
+        .cyber-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #ff2a2a;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 999999;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 0 15px #ff2a2a, inset 0 0 10px #ff2a2a;
+        }
+
+        .cyber-cursor-dot {
+            position: fixed;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            width: 6px;
+            height: 6px;
+            background-color: #8a2be2;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000000;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #8a2be2;
+        }
+
+        .cyber-cursor.hovering {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 42, 42, 0.1);
+            border-color: #8a2be2;
+            box-shadow: 0 0 25px #8a2be2, inset 0 0 15px #8a2be2;
+        }
+
         /* Animated Ambient Background */
         .ambient-bg {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            z-index: -1;
+            z-index: -2;
             background: 
                 radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
                 radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%);
@@ -61,7 +105,7 @@
             position: fixed;
             width: 100%;
             height: 100%;
-            z-index: -1;
+            z-index: 0;
         }
 
         .container {
@@ -81,24 +125,30 @@
         .badge {
             display: inline-block;
             padding: 0.5rem 1rem;
-            background: rgba(6, 182, 212, 0.1);
-            color: var(--accent-cyan);
-            border: 1px solid rgba(6, 182, 212, 0.2);
+            background: rgba(255, 42, 42, 0.1);
+            color: #ff2a2a;
+            border: 1px solid rgba(255, 42, 42, 0.3);
             border-radius: 20px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Share Tech Mono', monospace;
             font-size: 0.875rem;
             margin-bottom: 1.5rem;
             letter-spacing: 1px;
+            text-shadow: 0 0 8px rgba(255, 42, 42, 0.5);
+            box-shadow: 0 0 10px rgba(255, 42, 42, 0.2);
         }
 
         h1 {
+            font-family: 'Orbitron', sans-serif;
             font-size: 4rem;
-            font-weight: 800;
-            letter-spacing: -0.05em;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
             margin-bottom: 1rem;
-            background: linear-gradient(to right, #fff, #9ca3af);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            width: max-content;
+            margin-inline: auto;
+
+            color: #ffffff;
+            text-shadow: 0 0 20px #ff2a2a, 0 0 40px #8a2be2;
         }
 
         .subtitle {
@@ -146,7 +196,7 @@
         .card:hover {
             border-color: rgba(255, 255, 255, 0.2);
             background: rgba(31, 41, 55, 0.5);
-            box-shadow: 0 0 40px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 40px var(--card-glow);
         }
 
         .card:hover::before {
@@ -170,9 +220,10 @@
 
         .card:hover .card-icon {
             transform: scale(1.1) translateZ(20px);
-            background: rgba(59, 130, 246, 0.1);
-            border-color: rgba(59, 130, 246, 0.3);
-            color: var(--accent-blue);
+            box-shadow: 0 0 20px var(--card-color);
+            border-color: var(--card-color);
+            color: var(--card-color);
+            text-shadow: 0 0 10px var(--card-color);
         }
 
         .card h2 {
@@ -193,27 +244,12 @@
             transition: transform 0.4s ease;
         }
 
-        .card:hover p {
-            transform: translateZ(20px);
-        }
-
-        /* Glow effects for each card type */
-        .card-1:hover .card-icon { color: var(--accent-blue); box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
-        .card-2:hover .card-icon { color: var(--accent-cyan); box-shadow: 0 0 20px rgba(6, 182, 212, 0.2); }
-        .card-3:hover .card-icon { color: var(--accent-purple); box-shadow: 0 0 20px rgba(139, 92, 246, 0.2); }
-        .card-4:hover .card-icon { color: #f59e0b; box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
-
-        @keyframes fadeDown {
-            from { opacity: 0; transform: translateY(-30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         /* Action button style inside cards */
         .card-action {
             display: inline-flex;
             align-items: center;
             margin-top: 1.5rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Share Tech Mono', monospace;
             font-size: 0.85rem;
             color: var(--text-main);
             opacity: 0.6;
@@ -239,6 +275,191 @@
             h1 { font-size: 2.5rem; }
             .grid { grid-template-columns: 1fr; }
         }
+        .noir-ink {
+            position: fixed;
+            width: 250vmax;
+            height: 250vmax;
+            border-radius: 50%;
+            background: radial-gradient(circle, #000000 65%, rgba(0,0,0,0.85) 85%, transparent 100%);
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transform-origin: center center;
+            z-index: -1;
+            pointer-events: none;
+            transition: transform 1.8s cubic-bezier(0.7, 0, 0.2, 1), opacity 0.5s ease;
+        }
+        .noir-ink.expanding {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        body {
+            transition: background-color 1s ease;
+        }
+        
+        body.noir-theme * {
+            transition: color 1s ease, border-color 1s ease, box-shadow 1s ease, text-shadow 1s ease, background-color 1s ease !important;
+        }
+
+        body.noir-theme {
+            --bg-color: transparent; /* Keep background visible */
+            --glass-bg: rgba(10, 10, 10, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --text-main: #ffffff;
+            --text-muted: #888888;
+        }
+        
+        body.noir-theme .card {
+            --card-color: #ffffff !important;
+            --card-glow: rgba(255, 255, 255, 0.1) !important;
+            background: rgba(15, 15, 15, 0.9);
+        }
+        
+        body.noir-theme h1 {
+            color: #ffffff;
+            text-shadow: 0 0 15px #ffffff, 0 0 30px #aaaaaa;
+        }
+        
+        body.noir-theme .badge {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.2);
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+
+        body.noir-theme .cyber-cursor {
+            border-color: #ffffff !important;
+            box-shadow: 0 0 15px #ffffff, inset 0 0 10px #ffffff !important;
+        }
+        
+        body.noir-theme .cyber-cursor-dot {
+            background-color: #aaaaaa !important;
+            box-shadow: 0 0 10px #aaaaaa !important;
+        }
+
+        /* Animation Card CSS */
+        .glass-animation {
+            position: relative;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        .suspect-silhouette {
+            font-size: 5.5rem;
+            color: #ff2a2a;
+            opacity: 0.4;
+            filter: drop-shadow(0 0 10px #ff2a2a);
+            animation: pulse-suspect 2s infinite alternate;
+        }
+        .magnifying-glass {
+            position: absolute;
+            font-size: 4rem;
+            color: #06b6d4;
+            filter: drop-shadow(0 0 15px #06b6d4);
+            animation: search-glass 4s infinite ease-in-out;
+        }
+        @keyframes pulse-suspect {
+            0% { opacity: 0.2; transform: scale(0.95); }
+            100% { opacity: 0.7; transform: scale(1.05); }
+        }
+        @keyframes search-glass {
+            0% { transform: translate(-30px, -20px) scale(1) rotate(-10deg); }
+            25% { transform: translate(30px, -30px) scale(1.2) rotate(15deg); }
+            50% { transform: translate(20px, 30px) scale(1) rotate(5deg); }
+            75% { transform: translate(-30px, 20px) scale(1.1) rotate(-15deg); }
+            100% { transform: translate(-30px, -20px) scale(1) rotate(-10deg); }
+        }
+
+        /* About Us Footer */
+        .about-us {
+            margin-top: 4rem;
+            padding: 3rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            text-align: center;
+            color: var(--text-main);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-top: 2px solid #ff5e00;
+            animation: fadeDown 1.5s ease-out forwards;
+        }
+        .about-us h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #ffffff;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px #ff5e00;
+            font-size: 2rem;
+        }
+        .about-us p {
+            max-width: 800px;
+            margin: 0 auto 2rem auto;
+            color: var(--text-muted);
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+        .made-with {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: #ccc;
+        }
+        .crime-thing {
+            color: #ff2a2a;
+            text-shadow: 0 0 10px rgba(255,42,42,0.5);
+            font-weight: bold;
+        }
+        .developers {
+            font-family: 'Orbitron', sans-serif;
+            color: #06b6d4;
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+            font-size: 1rem;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        .developers span {
+            position: relative;
+        }
+        .developers span::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 140%; height: 140%;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.05) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            border-radius: 50%;
+            filter: blur(4px);
+        }
+
+        .reveal-text {
+            -webkit-mask-image: radial-gradient(circle 60px at var(--mouse-x, -100px) var(--mouse-y, -100px), black 40%, transparent 80%);
+            mask-image: radial-gradient(circle 60px at var(--mouse-x, -100px) var(--mouse-y, -100px), black 40%, transparent 80%);
+        }
+
+        body.noir-theme .about-us {
+            background: rgba(15, 15, 15, 0.9);
+            border-color: rgba(255, 255, 255, 0.2);
+            border-top: 2px solid #ffffff;
+        }
+        body.noir-theme .about-us h2 { color: #ffffff; text-shadow: 0 0 15px #ffffff, 0 0 30px #aaaaaa; }
+        body.noir-theme .developers { color: #ffffff; text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); }
+        body.noir-theme .crime-thing { color: #ffffff; text-shadow: 0 0 10px #ffffff; }
+        body.noir-theme .suspect-silhouette { filter: grayscale(100%) drop-shadow(0 0 10px #ffffff); color: #ffffff; }
+        body.noir-theme .magnifying-glass { filter: grayscale(100%) drop-shadow(0 0 15px #ffffff); color: #ffffff; }
+        body.noir-theme .animation-card h3 { color: #ffffff; text-shadow: 0 0 10px #ffffff; }
+        body.noir-theme .developers span::before { background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%); }
     </style>
 </head>
 <body>
@@ -254,40 +475,60 @@
         </header>
 
         <main class="grid">
-            <a href="http://localhost:8501" class="card card-1" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="1000">
+            <a href="http://localhost:8501" class="card card-1" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="1000" style="--card-color: #ff2a2a; --card-glow: rgba(255, 42, 42, 0.15);">
                 <div class="card-icon">⌖</div>
                 <h2>Suspect Profiler</h2>
                 <p>Simulate open-ended detective scenarios, interrogations, and criminal pursuits using our advanced language models.</p>
                 <div class="card-action">Initialize Module <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></div>
             </a>
             
-            <a href="http://localhost:8501" class="card card-2" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="1000">
-                <div class="card-icon">👁</div>
-                <h2>Evidence Analyzer</h2>
-                <p>Process crime scene data through our BiLSTM neural network to logically deduce events and classify evidence types.</p>
-                <div class="card-action">Initialize Module <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></div>
-            </a>
-            
-            <a href="http://localhost:8501" class="card card-3" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="1000">
-                <div class="card-icon">🗺</div>
-                <h2>Crime Mapper</h2>
-                <p>Identify suspects through strategic questioning. The AI maps behavioral patterns to narrow down the target.</p>
-                <div class="card-action">Initialize Module <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></div>
-            </a>
-            
-            <a href="http://localhost:8501" class="card card-4" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="1000">
+            <a href="http://localhost:8501" class="card card-2" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="1000" style="--card-color: #ffaa00; --card-glow: rgba(255, 170, 0, 0.15);">
                 <div class="card-icon">☣</div>
                 <h2>Interrogation Sim</h2>
                 <p>Face off against our fine-tuned DistilBERT deception detector. Attempt to keep your story straight under pressure.</p>
                 <div class="card-action">Initialize Module <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></div>
             </a>
+            
+            <a href="http://localhost:8501" class="card card-3" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="1000" style="--card-color: #df1b8d; --card-glow: rgba(223, 27, 141, 0.15);">
+                <div class="card-icon">♞</div>
+                <h2>Suspect Oracle</h2>
+                <p>Identify suspects through strategic questioning. The AI maps behavioral patterns to narrow down the target.</p>
+                <div class="card-action">Initialize Module <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></div>
+            </a>
+            
+            <a href="http://localhost:8501" class="card card-4" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="1000" style="--card-color: #06b6d4; --card-glow: rgba(6, 182, 212, 0.15);">
+                <div class="card-icon">👁</div>
+                <h2>Evidence Analyzer</h2>
+                <p>Process crime scene data through our BiLSTM neural network to logically deduce events and classify evidence types.</p>
+                <div class="card-action">Initialize Module <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></div>
+            </a>
+            <!-- NEW ANIMATION CARD -->
+            <div class="card card-5 animation-card" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="1000" style="--card-color: #ff5e00; --card-glow: rgba(255, 94, 0, 0.15); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 250px; text-decoration: none; cursor: crosshair;">
+                <div class="glass-animation">
+                    <div class="suspect-silhouette">👤</div>
+                    <div class="magnifying-glass">🔍</div>
+                </div>
+                <h3 class="reveal-text" style="margin-top: 1.5rem; font-family: 'Orbitron', sans-serif; font-size: 1rem; color: #ff5e00; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255, 94, 0, 0.5); --mouse-x: -100px; --mouse-y: -100px; text-align: center;">BE CAREFUL YOU ARE BEING WATCHED</h3>
+            </div>
         </main>
+        
+        <!-- NEW ABOUT US FOOTER -->
+        <footer class="about-us">
+            <h2>About CrimeMind</h2>
+            <p>CrimeMind is an end-to-end, AI-powered detective agent that immerses users in interactive crime investigations. The application acts as a virtual detective, requiring users to deduce culprits through evidence, logical reasoning, and visual clue analysis.</p>
+            <div class="made-with">
+                Made with <span class="crime-thing">🩸 deductive reasoning</span> by
+            </div>
+            <div class="developers">
+                <span>Hamza Tayyab</span> | <span>Ali Jawad</span> | <span>Ibrahim Zaidi</span> | <span>Raza Shahid</span>
+            </div>
+        </footer>
     </div>
 
     <!-- Particles.js for subtle background stars/nodes -->
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
-        particlesJS("particles-js", {
+        try { particlesJS("particles-js", {
             "particles": {
                 "number": { "value": 40, "density": { "enable": true, "value_area": 800 } },
                 "color": { "value": "#ffffff" },
@@ -323,17 +564,178 @@
                 }
             },
             "retina_detect": true
-        });
+        }); } catch(e){}
 
         // Initialize VanillaTilt for cards
-        VanillaTilt.init(document.querySelectorAll(".card"), {
+        try { VanillaTilt.init(document.querySelectorAll(".card"), {
             max: 5,
             speed: 400,
             glare: true,
             "max-glare": 0.1,
             perspective: 1000,
             scale: 1.02
+        }); } catch(e){}
+
+        // Cyberpunk Text Decryption & Glitch Logic
+        const chars = '!<>-_\\\\/[]{}—=+*^?#________';
+        
+        // 1. Heading Glitch Animation
+        const heading = document.querySelector('h1');
+        const originalHeading = heading.innerText;
+        setInterval(() => {
+            if (Math.random() > 0.6) { // 40% chance to glitch every 3 seconds
+                let iteration = 0;
+                let interval = setInterval(() => {
+                    heading.innerText = originalHeading.split('').map((letter, i) => {
+                        if(i < iteration) return originalHeading[i];
+                        if(letter === ' ') return ' ';
+                        return chars[Math.floor(Math.random() * chars.length)];
+                    }).join('');
+                    if(iteration >= originalHeading.length) { clearInterval(interval); heading.innerText = originalHeading; }
+                    iteration += 1/3;
+                }, 30);
+            }
+        }, 3000);
+
+        // 2. Card Paragraph Decryption on Hover
+        document.querySelectorAll('.card').forEach(card => {
+            const p = card.querySelector('p');
+            if(!p) return;
+            const originalText = p.innerText;
+            
+            let interval = null;
+            card.addEventListener('mouseenter', () => {
+                p.innerText = originalText.split('').map(c => c === ' ' ? ' ' : chars[Math.floor(Math.random() * chars.length)]).join('');
+                let iteration = 0;
+                clearInterval(interval);
+                interval = setInterval(() => {
+                    p.innerText = originalText.split('').map((letter, i) => {
+                        if(i < iteration) return originalText[i];
+                        if(letter === ' ') return ' ';
+                        return chars[Math.floor(Math.random() * chars.length)];
+                    }).join('');
+                    if(iteration >= originalText.length) {
+                        clearInterval(interval);
+                        p.innerText = originalText;
+                    }
+                    iteration += 1.5; // Decryption speed
+                }, 15);
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                clearInterval(interval);
+                p.innerText = originalText;
+            });
         });
+
+        // 3. Custom Glowing Cursor Logic
+        const cyberCursor = document.createElement('div');
+        cyberCursor.classList.add('cyber-cursor');
+        document.body.appendChild(cyberCursor);
+        
+        const cyberCursorDot = document.createElement('div');
+        cyberCursorDot.classList.add('cyber-cursor-dot');
+        document.body.appendChild(cyberCursorDot);
+
+        document.addEventListener('mousemove', (e) => {
+            cyberCursor.style.opacity = '1';
+            cyberCursorDot.style.opacity = '1';
+            // Slight delay for the outer ring for an "alive" drag effect
+            setTimeout(() => {
+                cyberCursor.style.left = e.clientX + 'px';
+                cyberCursor.style.top = e.clientY + 'px';
+            }, 50);
+            
+            // Dot follows exactly
+            cyberCursorDot.style.left = e.clientX + 'px';
+            cyberCursorDot.style.top = e.clientY + 'px';
+        });
+
+        document.querySelectorAll('a, button, .card').forEach(el => {
+            el.addEventListener('mouseenter', () => { cyberCursor.classList.add('hovering'); if (el.classList.contains('card')) { const color = el.style.getPropertyValue('--card-color').trim(); if (color) { cyberCursor.style.borderColor = color; cyberCursor.style.boxShadow = `0 0 15px ${color}, inset 0 0 10px ${color}`; cyberCursorDot.style.backgroundColor = color; cyberCursorDot.style.boxShadow = `0 0 10px ${color}`; } } });
+            el.addEventListener('mouseleave', () => { cyberCursor.classList.remove('hovering'); cyberCursor.style.borderColor = ''; cyberCursor.style.boxShadow = ''; cyberCursorDot.style.backgroundColor = ''; cyberCursorDot.style.boxShadow = ''; });
+        });
+        // 4. Noir Ink Transition Logic
+        if(document.querySelector('.noir-ink')) {
+            document.querySelector('.noir-ink').remove();
+        }
+        const noirInk = document.createElement('div');
+        noirInk.className = 'noir-ink';
+        document.body.appendChild(noirInk);
+
+        let isNoirLocked = false;
+        
+        heading.style.cursor = 'pointer';
+        
+        heading.addEventListener('mouseenter', (e) => {
+            if(isNoirLocked) return;
+            const rect = heading.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            noirInk.style.transition = 'transform 1.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease';
+            noirInk.style.opacity = '1';
+            noirInk.style.left = centerX + 'px';
+            noirInk.style.top = centerY + 'px';
+            noirInk.classList.add('expanding');
+            document.body.classList.add('noir-theme');
+        });
+
+        heading.addEventListener('mouseleave', () => {
+            if(isNoirLocked) return;
+            noirInk.classList.remove('expanding');
+            document.body.classList.remove('noir-theme');
+        });
+
+        heading.addEventListener('click', () => {
+            if (isNoirLocked) {
+                isNoirLocked = false;
+                document.body.classList.remove('noir-theme');
+                noirInk.classList.remove('expanding');
+            } else {
+                isNoirLocked = true;
+                noirInk.classList.add('expanding');
+                document.body.classList.add('noir-theme');
+            }
+        });
+
+        // Intercept card clicks to pass theme to main app
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (isNoirLocked) {
+                    e.preventDefault();
+                    window.location.href = card.getAttribute('href') + "?theme=noir";
+                }
+            });
+        });
+        // Interactive Animation Card Logic
+        const animCard = document.querySelector('.animation-card');
+        const magGlass = document.querySelector('.magnifying-glass');
+        const revealText = document.querySelector('.reveal-text');
+        if(animCard && magGlass) {
+            animCard.addEventListener('mousemove', (e) => {
+                const rect = animCard.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                magGlass.style.animation = 'none';
+                magGlass.style.transform = `translate(${x * 0.6}px, ${y * 0.6}px) scale(1.3) rotate(${(x/rect.width)*45}deg)`;
+                
+                if(revealText) {
+                    const textRect = revealText.getBoundingClientRect();
+                    const textX = e.clientX - textRect.left;
+                    const textY = e.clientY - textRect.top;
+                    revealText.style.setProperty('--mouse-x', `${textX}px`);
+                    revealText.style.setProperty('--mouse-y', `${textY}px`);
+                }
+            });
+            animCard.addEventListener('mouseleave', () => {
+                magGlass.style.animation = 'search-glass 4s infinite ease-in-out';
+                magGlass.style.transform = '';
+                if(revealText) {
+                    revealText.style.setProperty('--mouse-x', `-100px`);
+                    revealText.style.setProperty('--mouse-y', `-100px`);
+                }
+            });
+        }
     </script>
 </body>
 </html>

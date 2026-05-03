@@ -23,7 +23,11 @@ st.set_page_config(page_title="CrimeMind | Multimodal Detective", page_icon="ðŸ•
 
 # --- THEME MANAGEMENT ---
 if "theme" not in st.session_state:
-    st.session_state.theme = "dark"
+    query_theme = st.query_params.get("theme")
+    if query_theme in ["light", "dark", "noir"]:
+        st.session_state.theme = query_theme
+    else:
+        st.session_state.theme = "dark"
 
 if st.session_state.get("game_mode"):
     # Game is active: Put theme selector in the sidebar
@@ -53,7 +57,7 @@ theme = st.session_state.theme
 
 def get_theme_styles(t):
     base_css = """
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap');
     
     /* Pin Theme Selector to Top Right on Main Page */
     .main [data-testid="stSegmentedControl"] {
@@ -65,15 +69,13 @@ def get_theme_styles(t):
         padding: 5px 10px !important;
         border-radius: 8px !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
-        background: rgba(17, 24, 39, 0.4) !important;
-        backdrop-filter: blur(10px) !important;
     }
     
     /* Global Typography */
-    span, div, p, li, label { font-family: 'Inter', sans-serif; font-size: 1.2rem !important; }
-    h1 { font-family: 'Inter', sans-serif !important; font-weight: 800; font-size: 4rem !important; letter-spacing: -0.05em; background: linear-gradient(to right, #fff, #9ca3af); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    h2 { font-family: 'Inter', sans-serif !important; font-weight: 600; font-size: 3rem !important; }
-    h3 { font-family: 'Inter', sans-serif !important; font-weight: 600; font-size: 2.2rem !important; }
+    span, div, p, li, label { font-family: 'Share Tech Mono', monospace; font-size: 1.4rem !important; }
+    h1 { font-size: 4.5rem !important; }
+    h2 { font-size: 3.5rem !important; }
+    h3 { font-size: 2.8rem !important; }
     .material-symbols-rounded, .stIcon, [data-testid="stIconMaterial"] {
         font-family: 'Material Symbols Rounded' !important;
         font-size: 2.5rem !important;
@@ -120,7 +122,7 @@ def get_theme_styles(t):
     .stApp, .main, .block-container { background-color: #ffffff !important; color: #111111 !important; text-shadow: none; }
     ::-webkit-scrollbar-track { background: #ffffff; }
     ::-webkit-scrollbar-thumb { background: #888; border-radius: 5px; }
-    h1, h2, h3 { font-family: 'Inter', sans-serif !important; color: #000000 !important; letter-spacing: -1px; text-shadow: none !important; -webkit-text-fill-color: #000 !important; background: none !important; }
+    h1, h2, h3 { font-family: 'Orbitron', sans-serif !important; color: #000000 !important; text-transform: uppercase; text-shadow: 0 0 10px rgba(0,0,0,0.2) !important; letter-spacing: 1px; }
     [data-testid="stSidebar"] { background-color: #f0f0f0 !important; color: #111111 !important; border-right: 1px solid #ccc !important; box-shadow: 2px 0 12px rgba(0,0,0, 0.1); }
     [data-testid="stSidebar"] * { color: #111111 !important; }
     [data-testid="stSidebar"] a { color: #0066cc !important; font-weight: bold; }
@@ -140,9 +142,10 @@ def get_theme_styles(t):
     
     [data-testid="stToggle"] * { color: #111111 !important; }
     div[data-baseweb="checkbox"] > div { background-color: #666 !important; }
+    [data-baseweb="tab"][aria-selected="false"] p { color: #555555 !important; }
     
     .stChatMessage { min-height: 60px !important; border-radius: 16px !important; padding: 16px 20px !important; font-size: 15px !important; line-height: 1.7 !important; background: #ffffff !important; box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important; margin-bottom: 16px !important; border: 1px solid #eee !important; }
-    .stButton > button { background: #eee !important; color: #111 !important; font-family: 'Inter', sans-serif !important; font-weight: 600; font-size: 1.3rem !important; border: 1px solid #ccc !important; border-radius: 12px !important; box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important; padding: 20px !important; }
+    .stButton > button { background: #eee !important; color: #111 !important; font-family: 'Orbitron', sans-serif !important; font-weight: bold; font-size: 1.6rem !important; border: 1px solid #ccc !important; border-radius: 4px !important; box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important; padding: 25px !important; }
     .stButton > button:hover { transform: translateY(-2px) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important; }
     .mode-card-container { background: #fff; padding: 30px; border-radius: 8px; border: 1px solid #ddd; text-align: center; transition: all 0.3s ease; margin-bottom: 20px; position: relative; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     .mode-card-container:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
@@ -152,16 +155,16 @@ def get_theme_styles(t):
     elif t == "noir":
         return base_css + """
     .stApp { filter: grayscale(100%); }
-    .stApp, .main, .block-container { background-color: #050505 !important; color: #ffffff !important; text-shadow: 0 0 8px rgba(255,255,255,0.4); }
-    ::-webkit-scrollbar-track { background: #050505; }
+    .stApp, .main, .block-container { background-color: transparent !important; color: #ffffff !important; text-shadow: 0 0 8px rgba(255,255,255,0.4); }
+    ::-webkit-scrollbar-track { background: #000000; }
     ::-webkit-scrollbar-thumb { background: #ffffff; border-radius: 5px; }
-    h1, h2, h3 { font-family: 'Inter', sans-serif !important; color: #ffffff !important; text-shadow: 0 0 20px #ffffff !important; letter-spacing: -1px; -webkit-text-fill-color: #fff !important; background: none !important; }
+    h1, h2, h3 { font-family: 'Orbitron', sans-serif !important; color: #ffffff !important; text-transform: uppercase; text-shadow: 0 0 20px #ffffff, 0 0 40px #ffffff !important; letter-spacing: 1px; }
     [data-testid="stSidebar"] { background-color: #080808 !important; border-right: 1px solid #ffffff !important; box-shadow: 2px 0 12px rgba(255, 255, 255, 0.3); }
     [data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div:first-child { background: #080808; }
     .stTextInput > div > div > input, .stChatInputContainer > div { background-color: #0a0a0a !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.3) !important; }
     .stTextInput > div > div > input:focus, .stChatInputContainer > div:focus-within { border-color: #ffffff !important; box-shadow: 0 0 15px rgba(255,255,255,0.6) !important; }
     .stChatMessage { min-height: 60px !important; border-radius: 16px !important; padding: 16px 20px !important; font-size: 15px !important; line-height: 1.7 !important; backdrop-filter: blur(12px) !important; margin-bottom: 16px !important; background: rgba(255,255,255,0.03) !important; box-shadow: 0 0 15px rgba(255,255,255,0.15) !important; border: 1px solid rgba(255,255,255,0.2) !important; }
-    .stButton > button { background: linear-gradient(45deg, #222, #444) !important; color: #ffffff !important; font-family: 'Inter', sans-serif !important; font-weight: 600; font-size: 1.3rem !important; border: 1px solid #fff !important; border-radius: 12px !important; box-shadow: 0 0 15px rgba(255,255,255,0.2) !important; padding: 20px !important; }
+    .stButton > button { background: linear-gradient(45deg, #222, #444) !important; color: #ffffff !important; font-family: 'Orbitron', sans-serif !important; font-weight: bold; font-size: 1.6rem !important; border: 1px solid #fff !important; border-radius: 4px !important; box-shadow: 0 0 15px rgba(255,255,255,0.4) !important; padding: 25px !important; }
     .stButton > button:hover { transform: translateY(-2px) !important; box-shadow: 0 0 25px rgba(255,255,255,0.8) !important; }
     .mode-card-container { background: rgba(255,255,255,0.03); backdrop-filter: blur(14px); padding: 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); text-align: center; transition: all 0.3s ease; margin-bottom: 20px; position: relative; overflow: hidden; }
     .mode-card-container::before, .mode-card-container::after { content: ''; position: absolute; width: 20px; height: 20px; border: 2px solid rgba(255, 255, 255, 0.5); }
@@ -174,37 +177,39 @@ def get_theme_styles(t):
     [data-testid="stAlert"] * { color: #ffffff !important; }
     """
     else:
-        # Dark Theme (Glassmorphism & High Tech)
+        # Dark Theme
         return base_css + """
-    .stApp, .main, .block-container { background-color: transparent !important; color: #f9fafb !important; }
-    ::-webkit-scrollbar-track { background: #030712; }
-    ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 5px; }
-    [data-testid="stSidebar"] { background-color: rgba(3, 7, 18, 0.8) !important; backdrop-filter: blur(16px); border-right: 1px solid rgba(255, 255, 255, 0.08) !important; box-shadow: 2px 0 20px rgba(0, 0, 0, 0.5); }
-    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div:first-child { background: transparent; }
-    .stTextInput > div > div > input, .stChatInputContainer > div { background-color: rgba(17, 24, 39, 0.6) !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 12px !important; backdrop-filter: blur(10px); }
-    .stTextInput > div > div > input:focus, .stChatInputContainer > div:focus-within { border-color: #3b82f6 !important; box-shadow: 0 0 15px rgba(59, 130, 246, 0.3) !important; }
-    .stChatMessage { min-height: 60px !important; border-radius: 20px !important; padding: 20px !important; font-size: 15px !important; line-height: 1.7 !important; backdrop-filter: blur(16px) !important; -webkit-backdrop-filter: blur(16px) !important; margin-bottom: 20px !important; }
-    .stChatMessage:has([data-testid="chatAvatarIcon-assistant"]) { background: rgba(139, 92, 246, 0.1) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important; border-left: 4px solid #8b5cf6 !important; }
-    .stChatMessage:has([data-testid="chatAvatarIcon-user"]) { background: rgba(59, 130, 246, 0.1) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important; border-right: 4px solid #3b82f6 !important; }
-    .stButton > button { background: rgba(31, 41, 55, 0.6) !important; backdrop-filter: blur(10px) !important; color: #f9fafb !important; font-family: 'Inter', sans-serif !important; font-weight: 600; font-size: 1.3rem !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; border-radius: 16px !important; box-shadow: 0 10px 20px rgba(0,0,0,0.3) !important; padding: 20px !important; transition: all 0.3s ease; }
-    .stButton > button:hover { transform: translateY(-3px) !important; background: rgba(59, 130, 246, 0.2) !important; border-color: rgba(59, 130, 246, 0.4) !important; box-shadow: 0 15px 30px rgba(59, 130, 246, 0.2) !important; }
-    .mode-card-container { background: rgba(17, 24, 39, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 30px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.08); text-align: center; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 20px; position: relative; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-    .mode-card-container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); opacity: 0; transition: opacity 0.4s ease; }
-    .mode-card-container:hover { transform: translateY(-5px); background: rgba(31, 41, 55, 0.5); box-shadow: 0 0 40px rgba(59, 130, 246, 0.1); border-color: rgba(255, 255, 255, 0.2); }
-    .mode-card-container:hover::before { opacity: 1; }
-    .border-red:hover { box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); }
-    .border-cyan:hover { box-shadow: 0 0 30px rgba(6, 182, 212, 0.2); }
-    .border-purple:hover { box-shadow: 0 0 30px rgba(139, 92, 246, 0.2); }
-    .border-amber:hover { box-shadow: 0 0 30px rgba(245, 158, 11, 0.2); }
-    .stMarkdown p { color: #d1d5db; font-size: 1.2rem; }
-    .stMarkdown strong { color: #60a5fa; }
+    .stApp, .main, .block-container { background-color: #050505 !important; color: #ffffff !important; text-shadow: 0 0 8px rgba(255,42,42,0.4); }
+    ::-webkit-scrollbar-track { background: #050505; }
+    ::-webkit-scrollbar-thumb { background: #ff2a2a; border-radius: 5px; }
+    h1, h2, h3 { font-family: 'Orbitron', sans-serif !important; color: #ffffff !important; text-transform: uppercase; text-shadow: 0 0 20px #ff2a2a, 0 0 40px #8a2be2 !important; letter-spacing: 1px; }
+    [data-testid="stSidebar"] { background-color: #080808 !important; border-right: 1px solid #ff2a2a !important; box-shadow: 2px 0 12px rgba(255, 42, 42, 0.3); }
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div:first-child { background: #080808; }
+    .stTextInput > div > div > input, .stChatInputContainer > div { background-color: #0a0a0a !important; color: #ffffff !important; border: 1px solid rgba(255,42,42,0.3) !important; }
+    .stTextInput > div > div > input:focus, .stChatInputContainer > div:focus-within { border-color: #8a2be2 !important; box-shadow: 0 0 15px rgba(138,43,226,0.6) !important; }
+    .stChatMessage { min-height: 60px !important; border-radius: 16px !important; padding: 16px 20px !important; font-size: 15px !important; line-height: 1.7 !important; backdrop-filter: blur(12px) !important; margin-bottom: 16px !important; }
+    .stChatMessage:has([data-testid="chatAvatarIcon-assistant"]) { background: rgba(138, 43, 226, 0.03) !important; box-shadow: 0 0 15px rgba(138,43,226,0.15) !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; border-left: 4px solid #8a2be2 !important; }
+    .stChatMessage:has([data-testid="chatAvatarIcon-user"]) { background: rgba(255, 42, 42, 0.03) !important; box-shadow: 0 0 15px rgba(255,42,42,0.15) !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; border-right: 4px solid #ff2a2a !important; }
+    .stButton > button { background: linear-gradient(45deg, #ff2a2a, #8a2be2) !important; color: #ffffff !important; font-family: 'Orbitron', sans-serif !important; font-weight: bold; font-size: 1.6rem !important; border: none !important; border-radius: 4px !important; box-shadow: 0 0 15px rgba(255,42,42,0.4) !important; padding: 25px !important; }
+    .stButton > button:hover { transform: translateY(-2px) !important; box-shadow: 0 0 25px rgba(138,43,226,0.8) !important; }
+    .mode-card-container { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(14px); padding: 30px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; transition: all 0.3s ease; margin-bottom: 20px; position: relative; overflow: hidden; }
+    .mode-card-container::before, .mode-card-container::after { content: ''; position: absolute; width: 20px; height: 20px; border: 2px solid rgba(255, 255, 255, 0.2); }
+    .mode-card-container::before { top: 0; left: 0; border-right: none; border-bottom: none; }
+    .mode-card-container::after { bottom: 0; right: 0; border-left: none; border-top: none; }
+    .mode-card-container:hover { transform: translateY(-4px); }
+    .border-red:hover { box-shadow: 0 0 30px rgba(255,42,42,0.5); border-top: 4px solid #ff2a2a; }
+    .border-purple:hover { box-shadow: 0 0 30px rgba(138,43,226,0.5); border-top: 4px solid #8a2be2; }
+    .border-cyan:hover { box-shadow: 0 0 30px rgba(0,255,255,0.5); border-top: 4px solid #00FFFF; }
+    .border-amber:hover { box-shadow: 0 0 30px rgba(255,170,0,0.5); border-top: 4px solid #ffaa00; }
+    .stMarkdown p { color: #e0e0e0; font-size: 1.4rem; }
+    .stMarkdown strong { color: #ff2a2a; text-shadow: 0 0 5px #ff2a2a; }
     """
 
 st.markdown(f"<style>{get_theme_styles(theme)}</style>", unsafe_allow_html=True)
 
 # --- GLOBAL CANVAS BACKGROUND (INJECTED JS) ---
-bg_color = "#030712" if theme in ["dark", "noir"] else "#ffffff"
-p_colors = "['#ffffff']" if theme == "noir" else ("['#cccccc', '#aaaaaa']" if theme == "light" else "['#3b82f6', '#8b5cf6', '#06b6d4']")
+bg_color = "#000000" if theme == "noir" else ("#050505" if theme == "dark" else "#ffffff")
+p_colors = "['#cccccc', '#aaaaaa']" if theme == "light" else "['#ff2a2a', '#8a2be2']"
 
 components.html(
     f"""
