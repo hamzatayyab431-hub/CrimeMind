@@ -17,7 +17,7 @@ CrimeMind is built using a modern Python-based AI web stack designed for real-ti
 *   **Frontend / UI:** [Streamlit](https://streamlit.io/) handles the reactive UI, state management, and real-time DOM injections for background animations and custom CSS (Orbitron & Share Tech Mono fonts).
 *   **Core LLM Engine:** Powered by [Groq's](https://groq.com/) blazing-fast API inference. 
     *   `llama-3.1-8b-instant` for core conversational reasoning and storytelling.
-    *   `llama-3.2-11b-vision-preview` to process and deduce clues from user-uploaded images.
+    *   `meta-llama/llama-4-scout-17b-16e-instruct` to process and deduce clues from user-uploaded images.
 *   **Audio Pipeline:** 
     *   **Input:** Streamlit's native audio widget records user voice.
     *   **Transcription:** Processed instantly via Groq's `whisper-large-v3` model.
@@ -67,7 +67,7 @@ This mode has the most complex logic, heavily shifting based on the story type a
 *   **The End:** This mode is an **open-ended psychological battle**. There is no formal "Game Over" screen. It ends when you either confess, break character, or the AI formally decides to "arrest" you based on catching a logical flaw in your alibi.
 
 ### 🔍 4. Crime Scene Analyst
-*   **How it Plays:** The AI channels its inner Sherlock Holmes. It is programmed to show off by noticing tiny details. If you upload an image, it routes the image to the powerful `Llama 3.2 11B Vision` model to scan the pixels for clues. 
+*   **How it Plays:** The AI channels its inner Sherlock Holmes. It is programmed to show off by noticing tiny details. If you upload an image, it routes the image to the powerful `Llama 4 Scout 17B` model to scan the pixels for clues. 
 *   **The End:** This mode is also open-ended. It acts as your permanent forensic lab. You just keep throwing evidence, audio logs, and photos at it, and it will continuously update its working theory of who the killer is. 
 
 

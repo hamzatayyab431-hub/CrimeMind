@@ -796,7 +796,7 @@ if len(st.session_state.messages) > 0 and st.session_state.messages[-1]["role"] 
             groq_messages.append({"role": msg["role"], "content": msg["content"]})
             
     # Decide Model (Vision vs Text)
-    model_to_use = "llama-3.2-11b-vision-preview" if uploaded_media else "llama-3.1-8b-instant"
+    model_to_use = "meta-llama/llama-4-scout-17b-16e-instruct" if uploaded_media else "llama-3.1-8b-instant"
             
     with st.chat_message("assistant"):
         msg_box = st.empty()
